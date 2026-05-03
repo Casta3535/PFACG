@@ -1,0 +1,252 @@
+
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Control dinero dashboard</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root, [data-theme="light"] {--text-sm:clamp(.875rem,.8rem + .35vw,1rem);--text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.1rem);--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;--color-surface-offset:#f3f0ec;--color-border:#d4d1ca;--color-divider:#dcd9d5;--color-text:#28251d;--color-text-muted:#6f6d67;--color-text-inverse:#f9f8f4;--color-primary:#01696f;--color-success:#437a22;--color-warning:#da7101;--color-blue:#006494;--color-error:#a12c7b;--radius-lg:.75rem;--radius-xl:1rem;--radius-full:9999px;--shadow-sm:0 1px 2px oklch(0.2 0.01 80 / 0.06);--shadow-md:0 4px 12px oklch(0.2 0.01 80 / 0.08);--font-body:'Satoshi',Inter,sans-serif}
+    [data-theme="dark"] {--color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;--color-surface-offset:#1d1c1a;--color-border:#393836;--color-divider:#262523;--color-text:#cdccca;--color-text-muted:#9d9b97;--color-text-inverse:#2b2a28;--color-primary:#4f98a3;--color-success:#6daa45;--color-warning:#fdab43;--color-blue:#5591c7;--color-error:#d163a7;--shadow-sm:0 1px 2px oklch(0 0 0 / 0.2);--shadow-md:0 4px 12px oklch(0 0 0 / 0.3)}
+    *{box-sizing:border-box;margin:0;padding:0} body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);background:var(--color-bg);color:var(--color-text);padding:var(--space-4)} button,input,select{font:inherit;color:inherit} button{border:none;cursor:pointer;background:none}
+    .app{max-width:1180px;margin:0 auto;display:grid;gap:var(--space-4)} .topbar,.hero-top,.panel-head,.row{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+    .brand{display:flex;gap:var(--space-3);align-items:center}.brand svg{width:34px;height:34px;color:var(--color-primary)} .brand h1{font-size:var(--text-lg)} .brand p,.muted,.tiny{color:var(--color-text-muted)} .tiny{font-size:var(--text-sm)}
+    .btn{min-height:44px;padding:var(--space-3) var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface);border:1px solid var(--color-border)} .btn.primary{background:var(--color-primary);color:var(--color-text-inverse);border-color:transparent}
+    .card,.hero{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)} .hero{padding:var(--space-5);display:grid;gap:var(--space-4);background:linear-gradient(145deg,color-mix(in oklab,var(--color-primary) 10%,var(--color-surface)),var(--color-surface))}
+    .hero h2{font-size:var(--text-xl);line-height:1.1}.tag,.pill{display:inline-flex;padding:.35rem .7rem;border-radius:var(--radius-full);font-size:.82rem;font-weight:700}.tag{background:color-mix(in oklab,var(--color-primary) 12%,var(--color-surface));color:var(--color-primary)} .pill.ok{color:var(--color-success);background:color-mix(in oklab,var(--color-success) 11%,var(--color-surface))} .pill.warn{color:var(--color-warning);background:color-mix(in oklab,var(--color-warning) 11%,var(--color-surface))} .pill.no{color:var(--color-error);background:color-mix(in oklab,var(--color-error) 11%,var(--color-surface))}
+    .decision,.grid-2,.grid-3,.kpis{display:grid;gap:var(--space-4)} .decision,.grid-2{grid-template-columns:1.2fr .8fr} .grid-3{grid-template-columns:1fr 1fr 1fr} .kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))} .card{padding:var(--space-5)}
+    .big{font-size:clamp(1.55rem,1.2rem + 1vw,2.2rem);font-weight:700} .decision-box{padding:var(--space-5);border-radius:var(--radius-xl);border:1px solid var(--color-border);background:var(--color-surface-2)} .decision-value{font-size:clamp(2rem,1.5rem + 1.8vw,3rem);font-weight:700}
+    .list{display:grid;gap:var(--space-2)} .item{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--color-divider)} .item:last-child{border-bottom:none}
+    .chart-wrap{height:290px} input,select{min-height:44px;padding:0 var(--space-3);border-radius:var(--radius-lg);border:1px solid var(--color-border);background:var(--color-surface-2)} label{display:grid;gap:var(--space-2);font-size:var(--text-sm)} .form{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3)} .full{grid-column:1/-1}
+    @media (max-width:980px){.decision,.grid-2,.grid-3{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}} @media (max-width:640px){.kpis,.form{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="7" y="12" width="34" height="24" rx="8"></rect><path d="M16 24h16"></path><circle cx="32" cy="24" r="3"></circle></svg>
+      <div><h1>Mi Dinero</h1><p>App personal con presupuesto semanal y gastos fijos</p></div>
+    </div>
+    <div class="row">
+      <button class="btn" data-theme-toggle>◐</button>
+      <button class="btn" id="askBudgetBtn">¿Puedo gastar?</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <span class="tag">Tus datos de abril 2026</span>
+        <h2>Presupuesto semanal con gastos fijos descontados</h2>
+        <p class="muted">Lógica: nómina + recibidas - enviadas - fijos = base mensual ÷ semanas del mes</p>
+      </div>
+      <div class="tiny">Modelo mejorado con fijos</div>
+    </div>
+    <div class="decision">
+      <div class="decision-box">
+        <div id="trafficLabel" class="pill ok">Puedes gastar</div>
+        <div class="decision-value" id="safeToSpend">988 €</div>
+        <div class="muted" id="decisionText">Vas dentro del presupuesto semanal tras fijos.</div>
+      </div>
+      <div class="decision-box">
+        <h3 style="margin-bottom:var(--space-3)">Consulta rápida</h3>
+        <div class="form">
+          <label>Importe<input id="askAmount" type="number" value="40" min="0" step="0.01"></label>
+          <label>Categoría<select id="askCategory"></select></label>
+          <button class="btn primary full" id="checkSpendBtn">Evaluar gasto</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpis">
+    <article class="card"><h3 class="muted">Nómina</h3><div class="big" id="salaryValue"></div></article>
+    <article class="card"><h3 class="muted">Recibidas</h3><div class="big" id="receivedValue"></div></article>
+    <article class="card"><h3 class="muted">Enviadas</h3><div class="big" id="sentValue"></div></article>
+    <article class="card"><h3 class="muted">Gastos fijos</h3><div class="big" id="fixedValue"></div></article>
+    <article class="card"><h3 class="muted">Base mensual</h3><div class="big" id="monthlyBase"></div></article>
+    <article class="card"><h3 class="muted">Presupuesto semanal</h3><div class="big" id="weeklyBudget"></div></article>
+  </section>
+
+  <section class="grid-2">
+    <article class="card"><div class="panel-head"><h3>Resumen por cuenta</h3></div><div id="accountsList" class="list"></div></article>
+    <article class="card"><div class="panel-head"><h3>Alertas</h3></div><div id="alertsList" class="list"></div></article>
+  </section>
+
+  <section class="grid-3">
+    <article class="card"><div class="panel-head"><h3>Gasto por categoría</h3></div><div class="chart-wrap"><canvas id="catChart"></canvas></div></article>
+    <article class="card"><div class="panel-head"><h3>Movimientos recientes</h3></div><div id="transactionsList" class="list"></div></article>
+    <article class="card">
+      <div class="panel-head"><h3>Añadir movimiento manual</h3></div>
+      <div class="form">
+        <label>Tipo<select id="manualType"><option>Gasto</option><option>Transferencia interna</option><option>Recarga Revolut</option></select></label>
+        <label>Importe<input id="manualAmount" type="number" min="0" step="0.01" value="18"></label>
+        <label>Cuenta origen<select id="manualAccount"></select></label>
+        <label>Cuenta destino<select id="manualTargetAccount"></select></label>
+        <label>Categoría<select id="manualCategory"></select></label>
+        <label>Concepto<input id="manualConcept" type="text" value="Café"></label>
+        <button class="btn primary full" id="addManualBtn">Guardar movimiento</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid-3">
+    <article class="card"><div class="panel-head"><h3>Gastos fijos</h3><span class="tiny">Se restan del presupuesto base</span></div><div id="fixedList" class="list"></div></article>
+    <article class="card">
+      <div class="panel-head"><h3>Añadir gasto fijo</h3><span class="tiny">Mensual</span></div>
+      <div class="form">
+        <label>Nombre<input id="fixedName" type="text" value="Apple Pay"></label>
+        <label>Importe<input id="fixedAmount" type="number" min="0" step="0.01" value="3"></label>
+        <label>Cuenta<select id="fixedAccount"></select></label>
+        <button class="btn primary full" id="addFixedBtn">Añadir fijo</button>
+      </div>
+    </article>
+    <article class="card"><div class="panel-head"><h3>Resumen fijos por cuenta</h3></div><div class="chart-wrap"><canvas id="fixedChart"></canvas></div></article>
+  </section>
+</div>
+
+<script>
+const state = {
+  theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  salary: 3000,
+  transfersReceived: 175,
+  transfersSent: 1600,
+  weeksInMonth: 4,
+  accounts: [
+    {name:'Openbank', kind:'Principal'},
+    {name:'Bankinter', kind:'Principal'},
+    {name:'Revolut', kind:'Principal'},
+    {name:'Cobee', kind:'Separada'},
+    {name:'TECI', kind:'Cargo sobre Bankinter'}
+  ],
+  fixedExpenses: [
+    {name:'Apple Pay', amount:2.99, account:'Openbank'},
+    {name:'Metal Plan', amount:15.99, account:'Revolut'},
+    {name:'Coaching', amount:300, account:'Revolut'}
+  ],
+  transactions: [
+    {account:'Openbank', category:'Piscina', concept:'Bizum', amount:5, type:'Gasto', source:'Excel'},
+    {account:'Openbank', category:'Recarga', concept:'Revolut', amount:100, type:'Transferencia interna', source:'Excel', target:'Revolut'},
+    {account:'Bankinter', category:'Comida Cumple', concept:'Comida', amount:259.60, type:'Gasto', source:'Excel'},
+    {account:'TECI', category:'Repsol', concept:'Gasolina', amount:65.11, type:'Gasto', source:'Excel'},
+    {account:'Revolut', category:'Tabaco', concept:'Ocio', amount:6.75, type:'Gasto', source:'Excel'}
+  ]
+};
+
+const currency = v => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v).replace(/\u00a0/g,' ');
+let catChart, fixedChart;
+
+function effectiveAccount(t){ return t.account==='TECI' ? 'Bankinter' : t.account; }
+function categories(){ return [...new Set(state.transactions.filter(t=>t.type==='Gasto').map(t=>t.concept))].sort(); }
+function monthlyBase(){ return state.salary + state.transfersReceived - state.transfersSent - totalFixed(); }
+function weeklyBudget(){ return monthlyBase() / state.weeksInMonth; }
+function totalSpent(){ return state.transactions.filter(t=>t.type==='Gasto').reduce((s,t)=>s+t.amount,0); }
+function totalFixed(){ return state.fixedExpenses.reduce((s,f)=>s+f.amount,0); }
+function safeToSpend(){ return Math.max(0, weeklyBudget() - totalSpent()); }
+function traffic(){ const left = safeToSpend(); if(left<=0) return ['No puedes gastar','no','Ya te has pasado del presupuesto semanal.']; if(left<weeklyBudget()*0.25) return ['Vas justo','warn','Te queda poco margen semanal.']; return ['Puedes gastar','ok','Vas dentro del presupuesto semanal.']; }
+
+function render(){
+  document.documentElement.setAttribute('data-theme', state.theme);
+  document.getElementById('salaryValue').textContent = currency(state.salary);
+  document.getElementById('receivedValue').textContent = currency(state.transfersReceived);
+  document.getElementById('sentValue').textContent = currency(state.transfersSent);
+  document.getElementById('fixedValue').textContent = currency(totalFixed());
+  document.getElementById('monthlyBase').textContent = currency(monthlyBase());
+  document.getElementById('weeklyBudget').textContent = currency(weeklyBudget());
+  document.getElementById('safeToSpend').textContent = currency(safeToSpend());
+
+  const t = traffic();
+  document.getElementById('trafficLabel').textContent = t[0];
+  document.getElementById('trafficLabel').className = 'pill ' + t[1];
+  document.getElementById('decisionText').textContent = t[2];
+
+  const catOptions = categories().map(c=>`<option>${c}</option>`).join('');
+  const accountOptions = state.accounts.map(a=>`<option>${a.name}</option>`).join('');
+  document.getElementById('askCategory').innerHTML = catOptions;
+  document.getElementById('manualCategory').innerHTML = catOptions;
+  document.getElementById('manualAccount').innerHTML = accountOptions;
+  document.getElementById('manualTargetAccount').innerHTML = '<option>Ninguna</option>' + accountOptions;
+  document.getElementById('fixedAccount').innerHTML = accountOptions;
+
+  document.getElementById('accountsList').innerHTML = state.accounts.map(a=>`<div class="item"><div><div>${a.name}</div><div class="tiny">${a.kind}</div></div><div class="pill ok">Activa</div></div>`).join('');
+
+  const alerts = [
+    {txt:`Presupuesto mensual base: ${currency(monthlyBase())}`, cls:'ok'},
+    {txt:`Presupuesto semanal: ${currency(weeklyBudget())}`, cls:'ok'},
+    {txt:`Gastos fijos total: ${currency(totalFixed())}`, cls:'warn'},
+    {txt:`Gasto real cargado: ${currency(totalSpent())}`, cls: safeToSpend()<=0 ? 'no' : 'warn'}
+  ];
+  document.getElementById('alertsList').innerHTML = alerts.map(a=>`<div class="item"><span>${a.txt}</span><span class="pill ${a.cls}">${a.cls==='ok'?'OK':a.cls==='warn'?'Aviso':'Bloqueo'}</span></div>`).join('');
+
+  document.getElementById('transactionsList').innerHTML = state.transactions.slice(-10).reverse().map(t=>`<div class="item"><div><div>${t.category}</div><div class="tiny">${effectiveAccount(t)}${t.target ? ' → ' + t.target : ''} · ${t.concept} · ${t.type} · ${t.source}</div></div><strong>${currency(t.amount)}</strong></div>`).join('');
+
+  document.getElementById('fixedList').innerHTML = state.fixedExpenses.map(f=>`<div class="item"><div><div>${f.name}</div><div class="tiny">${f.account}</div></div><strong>${currency(f.amount)}</strong></div>`).join('');
+
+  document.getElementById('manualTargetAccount').disabled = document.getElementById('manualType').value === 'Gasto';
+  renderCharts();
+}
+
+function renderCharts(){
+  if(catChart) catChart.destroy();
+  if(fixedChart) fixedChart.destroy();
+  const styles = getComputedStyle(document.documentElement); const muted = styles.getPropertyValue('--color-text-muted').trim(), border = styles.getPropertyValue('--color-border').trim();
+
+  const totals = {}; state.transactions.filter(t=>t.type==='Gasto').forEach(t => totals[t.concept] = (totals[t.concept]||0)+t.amount);
+  catChart = new Chart(document.getElementById('catChart'), {type:'bar',data:{labels:Object.keys(totals),datasets:[{label:'Gasto',data:Object.values(totals),backgroundColor:['#01696f','#da7101','#006494','#7a39bb','#437a22','#a12c7b','#e8af34']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:muted},grid:{display:false}},y:{ticks:{color:muted},grid:{color:border}}}}});
+
+  const fixedTotals = {}; state.fixedExpenses.forEach(f => fixedTotals[f.account] = (fixedTotals[f.account]||0)+f.amount);
+  fixedChart = new Chart(document.getElementById('fixedChart'), {type:'pie',data:{labels:Object.keys(fixedTotals),datasets:[{data:Object.values(fixedTotals),backgroundColor:['#01696f','#da7101','#437a22']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+}
+
+function evaluateSpend(){
+  const amount = parseFloat(document.getElementById('askAmount').value || '0');
+  const category = document.getElementById('askCategory').value;
+  if (amount <= 0) return alert('Introduce un importe válido.');
+  const remaining = safeToSpend();
+  if (amount > remaining) return alert(`No deberías: supera tu margen semanal restante de ${currency(remaining)}.`);
+  alert(`Sí puedes: tras gastar ${currency(amount)} en ${category}, te quedarían ${currency(remaining - amount)} esta semana.`);
+}
+
+function addManualExpense(){
+  const amount = parseFloat(document.getElementById('manualAmount').value || '0');
+  let account = document.getElementById('manualAccount').value;
+  let target = document.getElementById('manualTargetAccount').value;
+  const category = document.getElementById('manualCategory').value;
+  const concept = document.getElementById('manualConcept').value.trim() || category;
+  const manualType = document.getElementById('manualType').value;
+  if (amount <= 0) return alert('Introduce un importe válido.');
+  if (manualType === 'Recarga Revolut') target = 'Revolut';
+  if (account === 'TECI') account = 'Bankinter';
+  const type = manualType === 'Gasto' ? 'Gasto' : 'Transferencia interna';
+  const label = manualType === 'Recarga Revolut' ? 'Recarga' : concept;
+  state.transactions.push({account, target: target==='Ninguna' ? '' : target, category: label, concept: category, amount, type, source:'Manual'});
+  render();
+  const msg = type === 'Gasto' ? `Movimiento añadido. Margen semanal: ${currency(safeToSpend())}` : `Transferencia añadida. No afecta presupuesto.`;
+  alert(msg);
+}
+
+function addFixedExpense(){
+  const name = document.getElementById('fixedName').value.trim();
+  const amount = parseFloat(document.getElementById('fixedAmount').value || '0');
+  const account = document.getElementById('fixedAccount').value;
+  if (!name || amount <= 0) return alert('Nombre e importe válidos.');
+  state.fixedExpenses.push({name, amount, account});
+  document.getElementById('fixedName').value = '';
+  document.getElementById('fixedAmount').value = '';
+  render();
+  alert(`Gasto fijo "${name}" añadido. Presupuesto base recalculado.`);
+}
+
+document.querySelector('[data-theme-toggle]').addEventListener('click',()=>{ state.theme = state.theme==='dark'?'light':'dark'; render(); });
+document.getElementById('checkSpendBtn').addEventListener('click', evaluateSpend);
+document.getElementById('askBudgetBtn').addEventListener('click', evaluateSpend);
+document.getElementById('addManualBtn').addEventListener('click', addManualExpense);
+document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
+document.getElementById('manualType').addEventListener('change', ()=> render());
+render();
+</script>
+</body>
+</html>
